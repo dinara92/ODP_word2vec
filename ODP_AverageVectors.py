@@ -8,6 +8,7 @@ Created on Fri Nov 25 16:06:12 2016
 
 import logging, gensim, re
 import numpy as np
+import pandas as pd
 
 num_features = 200
 
@@ -42,7 +43,7 @@ def getAvgFeatureVecs(sentences, model, num_features):
     counter = 0.
     # 
     # Preallocate a 2D numpy array, for speed
-    reviewFeatureVecs = np.zeros((len(sentences),num_features),dtype="float32")
+    featureVecs = np.zeros((len(sentences),num_features),dtype="float32")
     # 
     # Loop through the reviews
     for sent in sentences:
@@ -52,12 +53,13 @@ def getAvgFeatureVecs(sentences, model, num_features):
            print ("Document %d of %d" % (counter, len(sentences)))
        # 
        # Call the function (defined above) that makes average feature vectors
-       reviewFeatureVecs[counter] = sent_vectorizer(sent, model, \
+       featureVecs[counter] = sent_vectorizer(sent, model, \
            num_features)
        #
+
        # Increment the counter
        counter = counter + 1.
-    return reviewFeatureVecs
+    return featureVecs
     
 if __name__ == '__main__':
 
@@ -80,13 +82,15 @@ if __name__ == '__main__':
     # using the functions we defined above. Notice that we now use stop word
     # removal.
     
- # ****************************************************************
-# Calculate average feature vectors for training and testing sets,
-# using the functions we defined above. Notice that we now use stop word
-# removal.
+    # ****************************************************************
+    # Calculate average feature vectors for training and testing sets,
+    # using the functions we defined above
     print ("\tCreating average feature vecs for train docs")
     trainDataVecs = getAvgFeatureVecs( trainSentences, model, num_features )
-    
+    #maybe, better to save (all ODP pages - testpages) as trainDataVecs
+    #np.savetxt('trainDataVecs', trainDataVecs)
     print ("\tCreating average feature vecs for test docs")
     testDataVecs = getAvgFeatureVecs( testSentences, model, num_features )
-      
+    #np.savetxt('testDataVecs', testDataVecs)
+
+    
