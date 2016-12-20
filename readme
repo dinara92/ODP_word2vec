@@ -1,0 +1,5 @@
+files generated are uploaded to: 
+
+dict.csv - mapping (key,value) - (word, vector) from this model: /trained_models_pages/train_pages_10context/kaggleODP_pages_200features_0minwords_10context
+other files are vectors generated from running ODP_AverageVectors.py
+
