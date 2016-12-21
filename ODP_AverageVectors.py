@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import sklearn,csv
 
-num_features = 200
+num_features = 300
 
 with open('/home/dinara/word2vec/word2vec_gensim_ODP/text_files_for_training/trainPages.txt', 'r') as f:
     trainSentences = [re.sub("[^\w]", " ",  line).split() for line in f]
@@ -101,8 +101,8 @@ if __name__ == '__main__':
     
     # Load model
     print ("Loading Word2Vec model...")
-    model =  gensim.models.Word2Vec.load('../trained_models_pages/train_pages_10context/kaggleODP_pages_200features_0minwords_10context')
-    
+    #model =  gensim.models.Word2Vec.load('../trained_models_pages/train_pages_10context/kaggleODP_pages_200features_0minwords_10context')
+    model = gensim.models.Word2Vec.load_word2vec_format('/home/dinara/word2vec/word2vec_gensim_ODP/ODP_word2vec/GoogleNews-vectors-negative300.bin', binary=True)  # C binary format
     # If you don't plan to train the model any further, calling
     # init_sims will make the model much more memory-efficient.
     #model.init_sims(replace=True)
@@ -115,23 +115,23 @@ if __name__ == '__main__':
     # ****************************************************************
     # Calculate average feature vectors for training and testing sets,
     # using the functions we defined above
-    #print ("\tCreating average feature vecs for train docs")
-    #trainDataVecs = getAvgFeatureVecs( trainSentences, model, num_features )
+    print ("\tCreating average feature vecs for train docs")
+    trainDataVecs = getAvgFeatureVecs( trainSentences, model, num_features )
     #maybe, better to save (all ODP pages - testpages) as trainDataVecs
-    #np.savetxt('2_trainDataVecs_pages_200dim_0minwords_10context_nosqrt_docvecs', trainDataVecs)
-    #print ("\tCreating average feature vecs for test docs")
-    #testDataVecs = getAvgFeatureVecs( testSentences, model, num_features )
-    #np.savetxt('2_testDataVecs_pages_200dim_0minwords_10context_nosqrt_docvecs', testDataVecs)
+    np.savetxt('trainDataVecs_google_news', trainDataVecs)
+    print ("\tCreating average feature vecs for test docs")
+    testDataVecs = getAvgFeatureVecs( testSentences, model, num_features )
+    np.savetxt('testDataVecs_google_news', testDataVecs)
 
     #map key(word) -> to value (200-dim vector)
-    w2v = dict(zip(model.index2word, model.syn0))
-    print("This is dictionary")
-    #print(w2v)
+    #w2v = dict(zip(model.index2word, model.syn0))
+    #print("This is dictionary")
+
     #TfidfEmbeddingVectorizer(w2v)
     #with open('dict.csv', 'w') as csv_file:
     #    writer = csv.writer(csv_file)
     #    for key, value in w2v.items():
     #       writer.writerow([key, value])
     
-    tfidf = gensim.models.tfidfmodel.TfidfModel(trainSentences)
-    tfidf.save('/tmp/trainPages.tfidf_model')
+    #tfidf = gensim.models.tfidfmodel.TfidfModel(trainSentences)
+    #tfidf.save('/tmp/trainPages.tfidf_model')
