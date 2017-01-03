@@ -90,6 +90,40 @@ def getAvgFeatureVecs(sentences, model, num_features):
        # Increment the counter
        counter = counter + 1.
     return featureVecs
+
+def vect_adder(sent, model1, model2, num_features):
+    sent_vec = np.zeros(num_features)
+    numw = 0
+    for w in sent:
+        try:
+            #sent_vec = np.add(sent_vec, model1[w], model2[w]) 
+            sent_vec = np.add(sent_vec, model1[w]) 
+            sent_vec = np.add(sent_vec, model2[w])
+            numw+=1
+        except:
+            pass
+    #return sent_vec / np.sqrt(sent_vec.dot(sent_vec)) /numw
+    #sent_vec = np.divide(sent_vec,np.sqrt(sent_vec.dot(sent_vec)))
+    sent_vec = np.divide(sent_vec, numw)
+    sent_vec = np.divide(sent_vec, 2)
+    return sent_vec
+
+def get2ModelsAvgFeatureVecs(sentences, trainVecs1, trainVecs2):
+    counter = 0
+    featureVecsAve = np.zeros((len(sentences),num_features),dtype="float32")
+    for sent in sentences:
+        # Print a status message every 1000th review
+        if counter%1000. == 0.:
+           print ("Document %d of %d" % (counter, len(sentences)))
+           
+        #featureVecsAve[counter] = np.add (trainVecs1[counter], trainVecs2[counter])
+        #featureVecsAve[counter] = np.divide(featureVecsAve[counter], 2)
+        featureVecsAve[counter] = vect_adder(sent, trainVecs1, trainVecs2, num_features)
+        
+        # Increment the counter
+        counter = counter + 1.
+        
+    return featureVecsAve
     
 if __name__ == '__main__':
 
@@ -101,8 +135,8 @@ if __name__ == '__main__':
     
     # Load model
     print ("Loading Word2Vec model...")
-    #model =  gensim.models.Word2Vec.load('../trained_models_pages/train_pages_10context/kaggleODP_pages_200features_0minwords_10context')
-    model = gensim.models.Word2Vec.load_word2vec_format('/home/dinara/word2vec/word2vec_gensim_ODP/ODP_word2vec/GoogleNews-vectors-negative300.bin', binary=True)  # C binary format
+    #model =  gensim.models.Word2Vec.load('/home/dinara/word2vec/word2vec_gensim_ODP/trained_models_pages/train_pages_10context/kaggleODP_pages_200features_0minwords_10context')
+    #model = gensim.models.Word2Vec.load_word2vec_format('/home/dinara/word2vec/word2vec_gensim_ODP/ODP_word2vec/GoogleNews-vectors-negative300.bin', binary=True)  # C binary format
     # If you don't plan to train the model any further, calling
     # init_sims will make the model much more memory-efficient.
     #model.init_sims(replace=True)
@@ -115,13 +149,13 @@ if __name__ == '__main__':
     # ****************************************************************
     # Calculate average feature vectors for training and testing sets,
     # using the functions we defined above
-    print ("\tCreating average feature vecs for train docs")
-    trainDataVecs = getAvgFeatureVecs( trainSentences, model, num_features )
+    #print ("\tCreating average feature vecs for train docs")
+    #trainDataVecs = getAvgFeatureVecs( trainSentences, model, num_features )
     #maybe, better to save (all ODP pages - testpages) as trainDataVecs
-    np.savetxt('trainDataVecs_google_news', trainDataVecs)
-    print ("\tCreating average feature vecs for test docs")
-    testDataVecs = getAvgFeatureVecs( testSentences, model, num_features )
-    np.savetxt('testDataVecs_google_news', testDataVecs)
+    #np.savetxt('trainDataVecs_phrase_bigram_200f_0minw_10context', trainDataVecs)
+    #print ("\tCreating average feature vecs for test docs")
+    #testDataVecs = getAvgFeatureVecs( testSentences, model, num_features )
+    #np.savetxt('testDataVecs_phrase_bigram_200f_0minw_10context', testDataVecs)
 
     #map key(word) -> to value (200-dim vector)
     #w2v = dict(zip(model.index2word, model.syn0))
@@ -135,3 +169,21 @@ if __name__ == '__main__':
     
     #tfidf = gensim.models.tfidfmodel.TfidfModel(trainSentences)
     #tfidf.save('/tmp/trainPages.tfidf_model')
+    
+    model1 =  gensim.models.Word2Vec.load('/home/dinara/word2vec/word2vec_gensim_ODP/trained_models_pages/train_pages_10context_300f/kaggleODP_pages_300features_0minwords_10context')
+    model2 = gensim.models.Word2Vec.load_word2vec_format('/home/dinara/word2vec/word2vec_gensim_ODP/ODP_word2vec/GoogleNews-vectors-negative300.bin', binary=True)  # C binary format
+    #model2 = gensim.models.Word2Vec.load_word2vec_format('/home/dinara/word2vec/word2vec_gensim_ODP/ODP_word2vec/GoogleNews-vectors-negative300.txt')
+
+    #print ("\tCreating average feature vecs for train docs of Model1")
+    #trainDataVecs1 = getAvgFeatureVecs( trainSentences, model1, num_features )
+    #print ("\tCreating average feature vecs for test docs of Model1")
+    #testDataVecs1 = getAvgFeatureVecs( testSentences, model1, num_features )
+    
+    #print ("\tCreating average feature vecs for train docs of Model2")
+    #trainDataVecs2 = getAvgFeatureVecs( trainSentences, model2, num_features )
+    #print ("\tCreating average feature vecs for test docs of Model2")
+    #testDataVecs2 = getAvgFeatureVecs( testSentences, model2, num_features )
+    
+    print ("\tCreating average feature vecs for train docs of Model1 and Model2")
+    dataVecs = get2ModelsAvgFeatureVecs(testSentences, model1, model2)
+    #np.savetxt('get2ModelsAvgFeatureVecs_test_2', dataVecs)
