@@ -7,3 +7,12 @@ https://drive.google.com/drive/folders/0B5Pccc6TgAPleUZLbS1Kd3JfeTA
 dict.csv - mapping (key,value) - (word, vector) from this model: /trained_models_pages/train_pages_10context/kaggleODP_pages_200features_0minwords_10context
 other files are vectors generated from running ODP_AverageVectors.py
 
+get2ModelsAvgFeatureVecs_file - vectors of sentences from trainPages file, but average of local odp model and global google news model
+
+get2ModelsAvgFeatureVecs_file_test - same as above, but for testPages
+
+/***********************************************/
+above gave bad result, maybe because #sent_vec = np.add(sent_vec, model1[w], model2[w])
+so, change that and now have
+get2ModelsAvgFeatureVecs_train_2
+get2ModelsAvgFeatureVecs_test_2 files
