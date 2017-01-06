@@ -11,12 +11,12 @@ import numpy as np
 import pandas as pd
 import sklearn,csv
 
-num_features = 300
+num_features = 1000
 
-with open('/home/dinara/word2vec/word2vec_gensim_ODP/text_files_for_training/trainPages.txt', 'r') as f:
+with open('/Users/dinaraDILab/java_projects/ODP-Word2Vec/trainPages.txt', 'r') as f:
     trainSentences = [re.sub("[^\w]", " ",  line).split() for line in f]
 
-with open('/home/dinara/word2vec/word2vec_gensim_ODP/text_files_for_training/testPages.txt', 'r') as f:
+with open('/Users/dinaraDILab/java_projects/ODP-Word2Vec/testPages.txt', 'r') as f:
     testSentences = [re.sub("[^\w]", " ",  line).split() for line in f]
 
 # ****** Define functions to create average word vectors
@@ -51,21 +51,31 @@ class TfidfEmbeddingVectorizer(object):
                 for words in X
             ])
                 
-def sent_vectorizer(sent, model, num_features):
+def sent_vectorizer(sent, model, num_features, index2word_set):
     sent_vec = np.zeros(num_features)
     numw = 0
+    
+    # Index2word is a list that contains the names of the words in 
+    # the model's vocabulary. Convert it to a set, for speed 
+    #index2word_set = set(model.index2word)
+    #
+    # Loop over each word in the review and, if it is in the model's
+    # vocaublary, add its feature vector to the total
+
     for w in sent:
-        try:
-            sent_vec = np.add(sent_vec, model[w])
-            numw+=1
-        except:
-            pass
+        if w not in index2word_set:
+            continue
+        #try:
+        sent_vec = np.add(sent_vec, model[w])
+        numw+=1
+        #except:
+            #pass
     #return sent_vec / np.sqrt(sent_vec.dot(sent_vec)) /numw
     #sent_vec = np.divide(sent_vec,np.sqrt(sent_vec.dot(sent_vec)))
     sent_vec = np.divide(sent_vec, numw)
     return sent_vec
 
-def getAvgFeatureVecs(sentences, model, num_features):
+def getAvgFeatureVecs(sentences, model, num_features, index2word_set):
     # Given a set of sentences (each one a list of words), calculate 
     # the average feature vector for each one and return a 2D numpy array 
     # 
@@ -84,7 +94,7 @@ def getAvgFeatureVecs(sentences, model, num_features):
        # 
        # Call the function (defined above) that makes average feature vectors
        featureVecs[counter] = sent_vectorizer(sent, model, \
-           num_features)
+           num_features, index2word_set)
        #
 
        # Increment the counter
@@ -170,20 +180,20 @@ if __name__ == '__main__':
     #tfidf = gensim.models.tfidfmodel.TfidfModel(trainSentences)
     #tfidf.save('/tmp/trainPages.tfidf_model')
     
-    model1 =  gensim.models.Word2Vec.load('/home/dinara/word2vec/word2vec_gensim_ODP/trained_models_pages/train_pages_10context_300f/kaggleODP_pages_300features_0minwords_10context')
-    model2 = gensim.models.Word2Vec.load_word2vec_format('/home/dinara/word2vec/word2vec_gensim_ODP/ODP_word2vec/GoogleNews-vectors-negative300.bin', binary=True)  # C binary format
-    #model2 = gensim.models.Word2Vec.load_word2vec_format('/home/dinara/word2vec/word2vec_gensim_ODP/ODP_word2vec/GoogleNews-vectors-negative300.txt')
+    #model1 =  gensim.models.Word2Vec.load('/home/dinara/word2vec/word2vec_gensim_ODP/trained_models_pages/train_pages_10context_300f/kaggleODP_pages_300features_0minwords_10context')
+    #model2 = gensim.models.Word2Vec.load_word2vec_format('/home/dinara/word2vec/word2vec_gensim_ODP/ODP_word2vec/GoogleNews-vectors-negative300.bin', binary=True)  # C binary format
+    model = gensim.models.Word2Vec.load('/Users/dinaraDILab/word2vec/en_wiki/en_1000_no_stem/en.model')
+    #model = gensim.models.Word2Vec.load('/Users/dinaraDILab/word2vec/word2vec_py/ODP_word2vec/allODPpages_300features_0minwords_10context')
+    index2word_set = set(model.index2word)
 
-    #print ("\tCreating average feature vecs for train docs of Model1")
-    #trainDataVecs1 = getAvgFeatureVecs( trainSentences, model1, num_features )
-    #print ("\tCreating average feature vecs for test docs of Model1")
-    #testDataVecs1 = getAvgFeatureVecs( testSentences, model1, num_features )
+    print ("\tCreating average feature vecs for train docs")
+    trainDataVecs = getAvgFeatureVecs( trainSentences, model, num_features, index2word_set )
+    np.savetxt('/Users/dinaraDILab/word2vec/word2vec_py/ODP_word2vec/new_en_wiki/trainDocs_en_wiki', trainDataVecs)
+    print ("\tCreating average feature vecs for test docs")
+    testDataVecs = getAvgFeatureVecs( testSentences, model, num_features, index2word_set )
+    np.savetxt('/Users/dinaraDILab/word2vec/word2vec_py/ODP_word2vec/new_en_wiki/testDocs_en_wiki', testDataVecs)
+
     
-    #print ("\tCreating average feature vecs for train docs of Model2")
-    #trainDataVecs2 = getAvgFeatureVecs( trainSentences, model2, num_features )
-    #print ("\tCreating average feature vecs for test docs of Model2")
-    #testDataVecs2 = getAvgFeatureVecs( testSentences, model2, num_features )
-    
-    print ("\tCreating average feature vecs for train docs of Model1 and Model2")
-    dataVecs = get2ModelsAvgFeatureVecs(testSentences, model1, model2)
+    #print ("\tCreating average feature vecs for train docs of Model1 and Model2")
+    #dataVecs = get2ModelsAvgFeatureVecs(testSentences, model1, model2)
     #np.savetxt('get2ModelsAvgFeatureVecs_test_2', dataVecs)
