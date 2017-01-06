@@ -5,13 +5,15 @@ Created on Tue Dec 27 20:36:09 2016
 
 @author: dinara
 """
-import gensim, sklearn
+import gensim
 import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+import collections
 
-
-model =  gensim.models.Word2Vec.load('/home/dinara/word2vec/word2vec_gensim_ODP/trained_models_pages/train_pages_10context/kaggleODP_pages_200features_0minwords_10context')
+#model =  gensim.models.Word2Vec.load('/home/dinara/word2vec/word2vec_gensim_ODP/trained_models_pages/train_pages_10context/kaggleODP_pages_200features_0minwords_10context')
+model = gensim.models.Word2Vec.load('/Users/dinaraDILab/word2vec/word2vec_py/ODP_word2vec/allODPpages_300features_0minwords_10context')
 
     
 class TfidfEmbeddingVectorizer(object):
@@ -21,13 +23,13 @@ class TfidfEmbeddingVectorizer(object):
         self.dim = len(word2vec.itervalues().next())
 
     def fit(self, X, y):
-        tfidf = sklearn.TfidfVectorizer(analyzer=lambda x: x)
+        tfidf = TfidfVectorizer(analyzer=lambda x: x)
         tfidf.fit(X)
         # if a word was never seen - it must be at least as infrequent
         # as any of the known words - so the default idf is the max of 
         # known idf's
         max_idf = max(tfidf.idf_)
-        self.word2weight = sklearn.defaultdict(
+        self.word2weight = collections.defaultdict(
             lambda: max_idf,
             [(w, tfidf.idf_[i]) for w, i in tfidf.vocabulary_.items()])
 
@@ -50,3 +52,15 @@ print("This is dictionary")
 etree_w2v_tfidf = Pipeline([
     ("word2vec vectorizer", TfidfEmbeddingVectorizer(w2v)),
     ("extra trees", ExtraTreesClassifier(n_estimators=200))])
+
+
+X = [['Berlin', 'London'],
+     ['cow', 'cat'],
+     ['pink', 'yellow']]
+y = ['capitals', 'animals', 'colors']
+etree_w2v_tfidf.fit(X, y)
+# never before seen words!!!
+test_X = [['dog'], ['red'], ['Madrid']]
+
+print(etree_w2v_tfidf.predict(test_X))
+print("ExtraTreesClassifier classified")
